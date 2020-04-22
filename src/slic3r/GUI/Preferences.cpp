@@ -46,8 +46,8 @@ void PreferencesDialog::build()
 
 	def.label = L("Single Instance");
 	def.type = coBool;
-	def.tooltip = L("If this is enabled, when staring PrusaSlicer and another instance is running, that instance will be maximazed instead.");
-	def.set_default_value(new ConfigOptionBool{ app_config->has("single_instance") ? app_config->get("single_instance") == "1" : true });
+	def.tooltip = L("If this is enabled, when staring PrusaSlicer and another instance is running, that instance will be reactivated instead.");
+	def.set_default_value(new ConfigOptionBool{ app_config->has("single_instance") ? app_config->get("single_instance") == "1" : false });
 	option = Option(def, "single_instance");
 	m_optgroup_general->append_single_option_line(option);
 
