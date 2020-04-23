@@ -2226,11 +2226,11 @@ Plater::priv::priv(Plater *q, MainFrame *main_frame)
     });
     this->q->Bind(EVT_INSTANCE_GO_TO_FRONT, [this](InstanceGoToFrontEvent &) { 
         BOOST_LOG_TRIVIAL(debug) << "prusaslicer window going forward";
-		wxGetApp().mainframe->Restore();  // focus on my window
-        wxGetApp().GetTopWindow()->SetFocus();  // focus on my window
-        wxGetApp().GetTopWindow()->Raise();  // bring window to front
-        wxGetApp().GetTopWindow()->Show(true); // show the window
-        BOOST_LOG_TRIVIAL(debug) << "prusaslicer window went forward";
+		wxGetApp().mainframe->Iconize(false);
+        if (wxGetApp().mainframe->IsMaximized())
+            wxGetApp().mainframe->Maximize(true);
+        else
+            wxGetApp().mainframe->Maximize(false);
     });
 	wxGetApp().other_instance_message_handler()->init(this->q);
 
