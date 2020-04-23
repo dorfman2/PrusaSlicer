@@ -286,6 +286,32 @@ void OtherInstanceMessageHandler::shutdown()
 	m_initialized = false;
 	}
 }
+
+namespace MessageHandlerInternal
+{
+   // returns ::path to possible model or empty ::path if input string is not existing path
+	static boost::filesystem::path get_path(const std::string possible_path)
+	{
+		BOOST_LOG_TRIVIAL(debug) << "message part: " << possible_path;
+
+		if (possible_path.empty() || possible_path.size() < 3) {
+			BOOST_LOG_TRIVIAL(debug) << "empty";
+			return boost::filesystem::path();
+		}
+		if (boost::filesystem::exists(possible_path)) {
+			BOOST_LOG_TRIVIAL(debug) << "is path";
+			return boost::filesystem::path(possible_path);
+		} else if (possible_path[0] == '\"') {
+			if(boost::filesystem::exists(possible_path.substr(1, possible_path.size() - 2))) {
+				BOOST_LOG_TRIVIAL(debug) << "is path in quotes";
+				return boost::filesystem::path(possible_path.substr(1, possible_path.size() - 2));
+			}
+		}
+		BOOST_LOG_TRIVIAL(debug) << "is NOT path";
+		return boost::filesystem::path();
+	}
+} //namespace MessageHandlerInternal
+
 void OtherInstanceMessageHandler::handle_message(const std::string message) {
 	std::vector<boost::filesystem::path> paths;
 	auto                                 next_space = message.find(' ');
@@ -295,17 +321,21 @@ void OtherInstanceMessageHandler::handle_message(const std::string message) {
 	BOOST_LOG_TRIVIAL(info) << "message from other instance: " << message;
 
 	while (next_space != std::string::npos)
-	{
-		const std::string possible_path = message.substr(last_space, next_space - last_space);
-		if (counter != 0 && boost::filesystem::exists(possible_path)) {
-			paths.emplace_back(boost::filesystem::path(possible_path));
+	{	
+		if (counter != 0) {
+			const std::string possible_path = message.substr(last_space, next_space - last_space);
+			boost::filesystem::path p = MessageHandlerInternal::get_path(possible_path);
+			if(!p.string().empty())
+				paths.emplace_back(p);
 		}
 		last_space = next_space;
 		next_space = message.find(' ', last_space + 1);
 		counter++;
 	}
-	if (counter != 0 && boost::filesystem::exists(message.substr(last_space + 1))) {
-		paths.emplace_back(boost::filesystem::path(message.substr(last_space + 1)));
+	if (counter != 0 ) {
+		boost::filesystem::path p = MessageHandlerInternal::get_path(message.substr(last_space + 1));
+		if (!p.string().empty())
+			paths.emplace_back(p);
 	}
 	if (!paths.empty()) {
 		//wxEvtHandler* evt_handler = wxGetApp().plater(); //assert here?
