@@ -2231,6 +2231,11 @@ Plater::priv::priv(Plater *q, MainFrame *main_frame)
             wxGetApp().mainframe->Maximize(true);
         else
             wxGetApp().mainframe->Maximize(false);
+		wxGetApp().mainframe->Restore();  
+		wxGetApp().GetTopWindow()->SetFocus();  // focus on my window
+		wxGetApp().GetTopWindow()->Raise();  // bring window to front
+		wxGetApp().GetTopWindow()->Show(true); // show the window
+
     });
 	wxGetApp().other_instance_message_handler()->init(this->q);
 
