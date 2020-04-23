@@ -2222,6 +2222,7 @@ Plater::priv::priv(Plater *q, MainFrame *main_frame)
     this->take_snapshot(_(L("New Project")));
 
     this->q->Bind(EVT_LOAD_MODEL_OTHER_INSTANCE, [this](LoadFromOtherInstanceEvent &evt) { 
+		BOOST_LOG_TRIVIAL(debug) << "received load from other instance event ";
         this->load_files(evt.data, true, true);
     });
     this->q->Bind(EVT_INSTANCE_GO_TO_FRONT, [this](InstanceGoToFrontEvent &) { 
