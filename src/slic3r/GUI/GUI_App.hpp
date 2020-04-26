@@ -213,6 +213,7 @@ public:
 
 private:
     bool            on_init_inner();
+	void            init_app_config();
     void            window_pos_save(wxTopLevelWindow* window, const std::string &name);
     void            window_pos_restore(wxTopLevelWindow* window, const std::string &name, bool default_maximized = false);
     void            window_pos_sanitize(wxTopLevelWindow* window);

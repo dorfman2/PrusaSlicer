@@ -266,34 +266,7 @@ GUI_App::GUI_App()
 	, m_removable_drive_manager(std::make_unique<RemovableDriveManager>())
 	, m_other_instance_message_handler(std::make_unique<OtherInstanceMessageHandler>())
 {
-	//Doing all this initialization before init() because of instance_check() in PrusaSlicer.cpp
-
-	// Profiles for the alpha are stored into the PrusaSlicer-alpha directory to not mix with the current release.
-	SetAppName(SLIC3R_APP_KEY);
-	//SetAppName(SLIC3R_APP_KEY "-beta");
-	SetAppDisplayName(SLIC3R_APP_NAME);
-
-	// Set the Slic3r data directory at the Slic3r XS module.
-	// Unix: ~/ .Slic3r
-	// Windows : "C:\Users\username\AppData\Roaming\Slic3r" or "C:\Documents and Settings\username\Application Data\Slic3r"
-	// Mac : "~/Library/Application Support/Slic3r"
-
-	if (data_dir().empty())
-		set_data_dir(wxStandardPaths::Get().GetUserDataDir().ToUTF8().data());
-
-	if (!app_config)
-		app_config = new AppConfig();
-	preset_bundle = new PresetBundle();
-
-	// just checking for existence of Slic3r::data_dir is not enough : it may be an empty directory
-	// supplied as argument to --datadir; in that case we should still run the wizard
-	preset_bundle->setup_directories();
-
-	// load settings
-	app_conf_exists = app_config->exists();
-	if (app_conf_exists) {
-		app_config->load();
-	}
+	this->init_app_config();
 }
 
 GUI_App::~GUI_App()
@@ -325,6 +298,38 @@ bool GUI_App::init_opengl()
 }
 #endif // ENABLE_NON_STATIC_CANVAS_MANAGER
 
+void GUI_App::init_app_config()
+{
+	// Profiles for the alpha are stored into the PrusaSlicer-alpha directory to not mix with the current release.
+	SetAppName(SLIC3R_APP_KEY);
+	//SetAppName(SLIC3R_APP_KEY "-beta");
+	SetAppDisplayName(SLIC3R_APP_NAME);
+
+	// Set the Slic3r data directory at the Slic3r XS module.
+	// Unix: ~/ .Slic3r
+	// Windows : "C:\Users\username\AppData\Roaming\Slic3r" or "C:\Documents and Settings\username\Application Data\Slic3r"
+	// Mac : "~/Library/Application Support/Slic3r"
+
+	if (data_dir().empty())
+		set_data_dir(wxStandardPaths::Get().GetUserDataDir().ToUTF8().data());
+
+	if (!app_config)
+		app_config = new AppConfig();
+	if (!preset_bundle)
+	{
+		preset_bundle = new PresetBundle();
+		// just checking for existence of Slic3r::data_dir is not enough : it may be an empty directory
+		// supplied as argument to --datadir; in that case we should still run the wizard
+		preset_bundle->setup_directories();
+	}
+	// load settings
+	if (!app_conf_exists) {
+		app_conf_exists = app_config->exists();
+		if (app_conf_exists) {
+			app_config->load();
+		}
+	}
+}
 bool GUI_App::OnInit()
 {
     try {
@@ -351,27 +356,7 @@ bool GUI_App::on_init_inner()
 //     Slic3r::debugf "wxWidgets version %s, Wx version %s\n", wxVERSION_STRING, wxVERSION;
 
 
-    // initialization of app_config and preset_bundle happens in constructor
-	// so if it did initialized there it will be skipped here
-    if (data_dir().empty())
-        set_data_dir(wxStandardPaths::Get().GetUserDataDir().ToUTF8().data());
 
-	if (!app_config)
-		app_config = new AppConfig();
-	if (!preset_bundle)
-	{
-		preset_bundle = new PresetBundle();
-		// just checking for existence of Slic3r::data_dir is not enough : it may be an empty directory
-        // supplied as argument to --datadir; in that case we should still run the wizard
-		preset_bundle->setup_directories();
-	}
-    // load settings
-	if (!app_conf_exists) {
-		app_conf_exists = app_config->exists();
-		if (app_conf_exists) {
-			app_config->load();
-		}
-	}
 
     app_config->set("version", SLIC3R_VERSION);
     app_config->save();
